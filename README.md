@@ -1,7 +1,7 @@
 # React Native Pixel Perfect
 
 <div>
-  <img align="right" width="35%" src="./assets/presentation.gif">
+  <img align="right" width="35%" src="https://github.com/qvantor/rn-pixel-perfect/raw/main/assets/presentation.gif">
 </div>
 
 A simple tool for pixel-perfect layouts, allowing you to compare design screens with your app's implementation.
@@ -46,7 +46,7 @@ function RootLayout() {
 The CLI tool serves images from a folder, allowing you to navigate between screens and adjust their position and
 opacity.
 
-![image](./assets/terminal.png)
+![image](https://github.com/qvantor/rn-pixel-perfect/raw/main/assets/terminal.png)
 
 ### Cli parameters
 
