@@ -1,6 +1,6 @@
 {
   "name": "rn-pixel-perfect",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A simple tool for pixel-perfect layouts, allowing you to compare design screens with your app's implementation.",
   "author": "Sergei Nikolaev <iintersergey@gmail.com>",
   "homepage": "https://github.com/qvantor/rn-pixel-perfect",
