@@ -1,0 +1,21 @@
+{
+  "name": "root",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "prettier:fix": "npx prettier ./packages --write",
+    "prettier": "npx prettier ./packages --check",
+    "eslint": "npx eslint ./packages/**/*.ts[x] --no-ignore",
+    "check": "npm run prettier && npm run eslint",
+    "build": "lerna run build",
+    "publish": "npm run check && npm run build && lerna publish"
+  },
+  "devDependencies": {
+    "@react-native/eslint-config": "^0.75.3",
+    "eslint": "^8.57.0",
+    "lerna": "^8.1.8",
+    "prettier": "^3.3.3"
+  }
+}

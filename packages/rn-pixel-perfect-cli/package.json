@@ -1,0 +1,67 @@
+{
+  "name": "rn-pixel-perfect-cli",
+  "version": "0.0.0",
+  "description": "A simple tool for pixel-perfect layouts, allowing you to compare design screens with your app's implementation.",
+  "main": "dist/index.js",
+  "type": "module",
+  "homepage": "https://github.com/qvantor/rn-pixel-perfect",
+  "scripts": {
+    "watch": "tsc -w",
+    "build": "tsc"
+  },
+  "bin": {
+    "rn-pixel-perfect": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "package.json",
+    "README.md"
+  ],
+  "author": "Sergei Nikolaev <iintersergey@gmail.com>",
+  "license": "MIT",
+  "keywords": [
+    "react",
+    "native",
+    "react-native",
+    "expo",
+    "typescript",
+    "android",
+    "ios",
+    "pixel-perfect",
+    "overlay",
+    "layout",
+    "design",
+    "overlay",
+    "screen-matching",
+    "ui-testing",
+    "design-comparison",
+    "screen-overlay",
+    "development-tool"
+  ],
+  "dependencies": {
+    "ink": "^5.0.1",
+    "react": "^18.3.1",
+    "ws": "^8.18.0",
+    "zustand": "^4.5.5"
+  },
+  "devDependencies": {
+    "@tsconfig/strictest": "^2.0.5",
+    "@types/node": "^22.5.4",
+    "@types/react": "^18.3.5",
+    "@types/ws": "^8.5.12",
+    "typescript": "^5.6.2"
+  },
+  "lerna": {
+    "command": {
+      "publish": {
+        "directory": "./",
+        "assets": [
+          {
+            "from": "../../README.md",
+            "to": "./"
+          }
+        ]
+      }
+    }
+  }
+}

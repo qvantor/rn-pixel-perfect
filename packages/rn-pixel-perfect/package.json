@@ -1,0 +1,56 @@
+{
+  "name": "rn-pixel-perfect",
+  "version": "0.0.0",
+  "description": "A simple tool for pixel-perfect layouts, allowing you to compare design screens with your app's implementation.",
+  "author": "Sergei Nikolaev <iintersergey@gmail.com>",
+  "homepage": "https://github.com/qvantor/rn-pixel-perfect",
+  "license": "MIT",
+  "keywords": [
+    "react",
+    "native",
+    "react-native",
+    "expo",
+    "typescript",
+    "android",
+    "ios",
+    "pixel-perfect",
+    "overlay",
+    "layout",
+    "design",
+    "overlay",
+    "screen-matching",
+    "ui-testing",
+    "design-comparison",
+    "screen-overlay",
+    "development-tool"
+  ],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "watch": "tsc -w",
+    "build": "tsc"
+  },
+  "peerDependencies": {
+    "expo-constants": ">= 15.x",
+    "react": ">= 18.x",
+    "react-native": ">= 0.73.x"
+  },
+  "files": [
+    "dist",
+    "package.json",
+    "README.md"
+  ],
+  "lerna": {
+    "command": {
+      "publish": {
+        "directory": "./",
+        "assets": [
+          {
+            "from": "../../README.md",
+            "to": "./"
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "extends": "@tsconfig/strictest/tsconfig.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "moduleResolution": "Node16",
+    "module": "Node16",
+    "jsx": "react-jsx",
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "paths": {
+      "rn-pixel-perfect-common": ["../rn-pixel-perfect-common"]
+    }
+  },
+  "include": ["src/index.tsx"],
+  "exclude": ["node_modules", "dist"]
+}
