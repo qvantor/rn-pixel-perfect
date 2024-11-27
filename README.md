@@ -18,7 +18,7 @@ rn-pixel-perfect
 2. Install the React Native component
 
 ```bash
-npm i -g rn-pixel-perfect
+npm i rn-pixel-perfect
 ```
 
 3. Add the Overlay component to your app's layout file, typically near the end of your component tree.
