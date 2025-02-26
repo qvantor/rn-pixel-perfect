@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { render, Text, Box, useInput } from 'ink';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
@@ -52,18 +52,22 @@ type ImagesStoreType = {
   selected: number;
   images: string[];
   hidden: boolean;
+  scroll: boolean;
   setSelected: (selected: number) => void;
   setImages: (images: string[]) => void;
   toggleHidden: () => void;
+  toggleScroll: () => void;
 };
 
 const ImagesStore = createStore<ImagesStoreType>((set) => ({
   selected: 0,
   images: [],
   hidden: false,
+  scroll: false,
   setSelected: (selected: number) => set({ selected }),
   setImages: (images: string[]) => set({ images }),
   toggleHidden: () => set(({ hidden }) => ({ hidden: !hidden })),
+  toggleScroll: () => set(({ scroll }) => ({ scroll: !scroll })),
 }));
 
 type RegisterMsg = {
@@ -77,11 +81,6 @@ type SetImage = {
   image: string;
 };
 
-type MoveUp = {
-  type: 'move';
-  value: number;
-};
-
 type ChangeOpacity = {
   type: 'changeOpacity';
   value: number;
@@ -92,7 +91,12 @@ type SetHidden = {
   value: boolean;
 };
 
-type ServerMessages = SetImage | MoveUp | ChangeOpacity | SetHidden;
+type SetScroll = {
+  type: 'setScroll';
+  value: boolean;
+};
+
+type ServerMessages = SetImage | ChangeOpacity | SetHidden | SetScroll;
 
 function uint8ArrayToBase64(uint8Array: Uint8Array) {
   let binary = '';
@@ -122,8 +126,10 @@ wss.on('connection', function connection(ws) {
     const msg = validateMessage(data);
     switch (msg?.type) {
       case 'register': {
-        const { selected, images } = ImagesStore.getState();
+        const { selected, images, hidden, scroll } = ImagesStore.getState();
         if (images[selected]) setImage(images[selected], ws);
+        if (hidden) sendServerMessage({ type: 'setHidden', value: hidden }, ws);
+        if (scroll) sendServerMessage({ type: 'setScroll', value: scroll }, ws);
         return ConnectionsStore.getState().addConnection({
           name: msg?.name,
           connection: ws,
@@ -160,15 +166,15 @@ const setImage = async (name: string, target?: Server) => {
   }
 };
 
-const move = (plus: boolean, fast: boolean) =>
-  sendServerMessage({
-    type: 'move',
-    value: (fast ? 10 : 1) * (plus ? 1 : -1),
-  });
-
 const setHidden = (value: boolean) =>
   sendServerMessage({
     type: 'setHidden',
+    value,
+  });
+
+const setScroll = (value: boolean) =>
+  sendServerMessage({
+    type: 'setScroll',
     value,
   });
 
@@ -189,42 +195,39 @@ const HelpItem = ({ title, value }: { title: string; value: string }) => {
 };
 
 const FileSelector = () => {
-  const { images, setImages, hidden, toggleHidden, selected, setSelected } =
-    useStore(ImagesStore);
+  const {
+    images,
+    setImages,
+    hidden,
+    scroll,
+    toggleHidden,
+    toggleScroll,
+    selected,
+    setSelected,
+  } = useStore(ImagesStore);
   const timeout = useRef<NodeJS.Timeout>();
   const [error, setError] = useState<string | null>(null);
   useInput((char, key) => {
     const listSize = images.length;
     const prev = ImagesStore.getState().selected;
     if (key.rightArrow) {
-      if (key.shift) return changeOpacity(true); // plus opacity
       let newVal = (prev ?? 0) + 1;
       if (listSize <= newVal) newVal = 0;
       return setSelected(newVal); // next screen
     } else if (key.leftArrow) {
-      if (key.shift) return changeOpacity(false); // minus opacity
       let newVal = (prev ?? 0) - 1;
       if (newVal < 0) newVal = listSize - 1;
       return setSelected(newVal); // prev screen
     } else if (key.upArrow)
-      move(false, key.shift); // move up
+      return changeOpacity(true); // plus opacity
     else if (key.downArrow)
-      move(true, key.shift); // move down
-    else if (char === 'H' || char === 'h') toggleHidden(); // toggle screen
+      return changeOpacity(false); // minus opacity
+    else if (char === 'H' || char === 'h')
+      toggleHidden(); // toggle hidden
+    else if (char === 'S' || char === 's') toggleScroll(); // toggle scroll
   });
 
-  useEffect(() => {
-    if (timeout.current) clearTimeout(timeout.current);
-    timeout.current = setTimeout(() => {
-      if (images[selected]) setImage(images[selected]);
-    }, 200);
-  }, [selected, images]);
-
-  useEffect(() => {
-    setHidden(hidden);
-  }, [hidden]);
-
-  useEffect(() => {
+  const readFolder = useCallback(() => {
     fs.promises
       .readdir(CONSTANTS.folder)
       .then((list) => {
@@ -239,6 +242,35 @@ const FileSelector = () => {
         setError(e.message ?? `Could not open ${CONSTANTS.folder} folder`);
       });
   }, [setImages, setSelected]);
+
+  useEffect(() => {
+    if (timeout.current) clearTimeout(timeout.current);
+    timeout.current = setTimeout(() => {
+      if (images[selected]) setImage(images[selected]);
+    }, 200);
+  }, [selected, images]);
+
+  useEffect(() => {
+    setHidden(hidden);
+  }, [hidden]);
+
+  useEffect(() => {
+    setScroll(scroll);
+  }, [scroll]);
+
+  useEffect(() => {
+    if (!fs.existsSync(CONSTANTS.folder)) {
+      return setError(`Folder ./${CONSTANTS.folder} not found`);
+    }
+
+    readFolder();
+    const watcher = fs.watch(CONSTANTS.folder, () => {
+      readFolder();
+    });
+    return () => {
+      watcher.close();
+    };
+  }, [readFolder]);
 
   const devices = useStore(ConnectionsStore, (store) => store.devices);
   return (
@@ -266,18 +298,15 @@ const FileSelector = () => {
         </Box>
         <Box flexGrow={1} gap={6}>
           <Box flexDirection="column">
-            <HelpItem title="↑" value="Scroll up" />
-            <HelpItem title="↓" value="Scroll down" />
             <HelpItem title="←" value="Prev screen" />
             <HelpItem title="→" value="Next screen" />
           </Box>
           <Box flexDirection="column">
-            <HelpItem title="↑+sh" value="Fast scroll up" />
-            <HelpItem title="↓+sh" value="Fast scroll down" />
-            <HelpItem title="←+sh" value="Decrease opacity" />
-            <HelpItem title="→+sh" value="Increase opacity" />
+            <HelpItem title="↑" value="Increase opacity" />
+            <HelpItem title="↓" value="Decrease opacity" />
           </Box>
           <Box flexDirection="column">
+            <HelpItem title="s" value={scroll ? 'Scroll on ' : 'Scroll off'} />
             <HelpItem title="h" value={hidden ? 'Show Ui' : 'Hide Ui'} />
           </Box>
         </Box>
