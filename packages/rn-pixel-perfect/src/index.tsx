@@ -50,12 +50,12 @@ export const Overlay = ({ host, port }: { host?: string; port?: number }) => {
   const [hidden, setHidden] = useState<boolean>(false);
   const [scroll, setScroll] = useState<boolean>(false);
   const scrollRef = useRef<ScrollView>(null);
-  const onSetImage = useCallback(async (msg: SetImage) => {
-    const { width, height } = await Image.getSize(msg.image);
-    const screenWidth = Dimensions.get('screen').width;
-    setImg({
-      src: msg.image,
-      height: height / (width / screenWidth),
+  const onSetImage = useCallback((msg: SetImage) => {
+    // Use the callback form of getSize, not the promise form: the latter only
+    // exists in react-native >= 0.75 (callback-only below that).
+    Image.getSize(msg.image, (width, height) => {
+      const screenWidth = Dimensions.get('screen').width;
+      setImg({ src: msg.image, height: height / (width / screenWidth) });
     });
   }, []);
 
